@@ -7,7 +7,7 @@ const initRoutes = (app) =>{
     app.use('/api/v1/users' ,auth)
     
     return app.use('/', (req, res) =>{
-        return res.send('error url')
+        return res.send('Hello word')
     })
 }
 
