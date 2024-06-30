@@ -271,28 +271,42 @@ export const getAllEmployee = () => new Promise(async (resolve, reject) => {
     }
 })
 
-export const updateUserController = (idUser, name, sdt, diaChi, gioiTinh, namSinh, image) => new Promise(async (resolve, reject) => {
+
+export const updateUser = async ({ userId, name, newEmail, newPassword, gioiTinh, sdt, diaChi, image, namSinh }) => {
     try {
+        const updateValues = {
+            name: name || undefined,
+            email: newEmail || undefined,
+            password: newPassword ? hashPassword(newPassword) : undefined,
+            gioiTinh: gioiTinh || undefined,
+            namSinh: namSinh || undefined,
+            sdt: sdt || undefined,
+            diaChi: diaChi || undefined,
+            avatar: image || undefined,
+        };
+
+        // Lọc bỏ các giá trị undefined để giữ nguyên giá trị nếu không được cung cấp
+        const filteredUpdateValues = Object.fromEntries(Object.entries(updateValues).filter(([key, value]) => value !== undefined));
+
         const response = await db.User.update(
+            filteredUpdateValues,
             {
-                name,
-                sdt,
-                diaChi,
-                gioiTinh,
-                namSinh,
-                // image
-            },
-            {
-                where: {
-                    id: idUser
-                }
+                where: { id: userId },
             }
         );
-        resolve({
+
+        if (response === 0) {
+            return {
+                err: 1,
+                mess: 'Người dùng không tồn tại',
+            };
+        }
+
+        return {
             err: 0,
-            mess: response ? "Cập nhật thông tin người dùng thành công" : "Không có id người dùng này"
-        })
+            mess: 'Cập nhật thông tin người dùng thành công',
+        };
     } catch (e) {
-        reject(e);
+        throw e;
     }
-})
+};
