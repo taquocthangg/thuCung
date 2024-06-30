@@ -77,7 +77,7 @@ const transporter = nodemailer.createTransport({
     secure: false,
     auth: {
         user: 'quocthangforwork@gmail.com',
-        pass: 'gtovgcshoqnolyao',
+        pass: 'oauuhkqpbqrnaqgy',
     },
 });
 export const forgotPassword = async (email) => {
@@ -88,9 +88,9 @@ export const forgotPassword = async (email) => {
     if (user) {
 
         user.resetToken = token;
-        user.resetTokenExpiry = Date.now() + 900000
+        user.resetTokenExpiry = Date.now() + 90000000
         await user.save();
-        const resetLink = process.env.URL_SERVER + `/api/v1/user/reset-password/${token}`;
+        const resetLink = process.env.URL_SERVER + `/api/v1/users/reset-password/${token}`;
         const mailOptions = {
             from: 'shopThuCung@gmail.com',
             to: email,
@@ -104,7 +104,25 @@ export const forgotPassword = async (email) => {
     }
     return errorMessage
 }
+export const resetPassword = async (token, newPassword) => {
 
+    const user = await db.User.findOne({
+        where: {
+            resetToken: token,
+        },
+    });
+
+    if (user) {
+        const saltRounds = 10; // Số lượng vòng lặp hash
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        user.password = hashedPassword;
+        user.resetToken = null;
+        user.resetTokenExpiry = null;
+        await user.save();
+    } else {
+        throw new Error('Token không hợp lệ hoặc đã hết hạn.');
+    }
+};
 export const getAllUser = () => new Promise(async (resolve, reject) => {
     try {
         const Users = await db.User.findAndCountAll();
@@ -271,8 +289,32 @@ export const getAllEmployee = () => new Promise(async (resolve, reject) => {
     }
 })
 
-
-export const updateUser = async ({ userId, name, newEmail, newPassword, gioiTinh, sdt, diaChi, image, namSinh }) => {
+export const updateUserController = (idUser, name, sdt, diaChi, gioiTinh, namSinh, image) => new Promise(async (resolve, reject) => {
+    try {
+        const response = await db.User.update(
+            {
+                name,
+                sdt,
+                diaChi,
+                gioiTinh,
+                namSinh,
+                // image
+            },
+            {
+                where: {
+                    id: idUser
+                }
+            }
+        );
+        resolve({
+            err: 0,
+            mess: response ? "Cập nhật thông tin người dùng thành công" : "Không có id người dùng này"
+        })
+    } catch (e) {
+        reject(e);
+    }
+})
+export const updateUser = async ({userId, name, newEmail, newPassword, namSinh, gioiTinh, sdt, diaChi, image }) => {
     try {
         const updateValues = {
             name: name || undefined,
@@ -294,7 +336,7 @@ export const updateUser = async ({ userId, name, newEmail, newPassword, gioiTinh
                 where: { id: userId },
             }
         );
-
+console.log(response);
         if (response === 0) {
             return {
                 err: 1,

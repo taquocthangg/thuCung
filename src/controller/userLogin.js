@@ -42,6 +42,7 @@ export const dangNhap = async (req, res) => {
 export const forgotPassword =async (req,res)=>{
     const {email}=req.body
     try{
+        console.log(email);
         await services.forgotPassword(email);
         res.status(200).json({
             err: 1,
@@ -56,6 +57,20 @@ export const forgotPassword =async (req,res)=>{
         });
     }
 }
+export const resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+    try {
+        await services.resetPassword(token, newPassword);
+        res.status(200).json({ message: 'Mật khẩu đã được đặt lại.' });
+    } catch (error) {
+        res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });
+    }
+};
+export const renderResetPasswordPage = (req, res) => {
+    
+    res.sendFile(__dirname + '/reset-password.html');
+};
 
 export const getAllUser=async (req,res)=>{
     try{
@@ -158,21 +173,21 @@ export const getAllEmployee= async (req,res)=>{
 }
 
 export const updateUserController = async (req, res) => {
-    try {
+    // try {
         const fileData = req.file;
-        const avatar = req.body.image;
+        const avatar = req.body.image[0].response;
         const image = fileData?.path ? fileData?.path : avatar;
         const userId = req.params.userId;
+        console.log(avatar);
         const { name, newEmail, newPassword, gioiTinh, sdt, diaChi, namSinh } = req.body;
         const result = await services.updateUser({ userId, name, newEmail, newPassword, namSinh, gioiTinh, sdt, diaChi, image });
-
 
         if (result.err === 0) {
             res.status(200).json({ message: result.mess });
         } else {
             res.status(400).json({ message: result.mess });
         }
-    } catch (error) {
-        res.status(500).json({ message: 'Lỗi server' });
-    }
+    // } catch (error) {
+    //     res.status(500).json({ message: 'Lỗi server' });
+    // }
 };
