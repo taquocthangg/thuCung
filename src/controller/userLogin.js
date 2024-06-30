@@ -175,7 +175,7 @@ export const getAllEmployee= async (req,res)=>{
 export const updateUserController = async (req, res) => {
     // try {
         const fileData = req.file;
-        const avatar = req.body.image[0]?.response;
+        const avatar = req.body.image?[0].response :'';
         const image = fileData?.path ? fileData?.path : avatar;
         const userId = req.params.userId;
         console.log(avatar);
