@@ -157,18 +157,22 @@ export const getAllEmployee= async (req,res)=>{
     }
 }
 
-export const updateUserController =async (req,res)=>{
-    try{
-        const fileData= req.file;
-        const image=fileData?.path;
-        const idUser=req.params.userId;
-        const {name,sdt,diaChi,gioiTinh,namSinh}=req.body;
-        const response = await services.updateUserController(idUser,name,sdt,diaChi,gioiTinh,namSinh,image);
-        return res.status(200).json({response})
-    }catch(e){
-        return res.status(500).json({
-            err:-1,
-            mess:"Lỗi sever"
-        })
+export const updateUserController = async (req, res) => {
+    try {
+        const fileData = req.file;
+        const avatar = req.body.image;
+        const image = fileData?.path ? fileData?.path : avatar;
+        const userId = req.params.userId;
+        const { name, newEmail, newPassword, gioiTinh, sdt, diaChi, namSinh } = req.body;
+        const result = await services.updateUser({ userId, name, newEmail, newPassword, namSinh, gioiTinh, sdt, diaChi, image });
+
+
+        if (result.err === 0) {
+            res.status(200).json({ message: result.mess });
+        } else {
+            res.status(400).json({ message: result.mess });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server' });
     }
-}
+};
